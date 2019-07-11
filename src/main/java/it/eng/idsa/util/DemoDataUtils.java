@@ -10,7 +10,7 @@ public final class DemoDataUtils {
 
     private static final String HALF_MINUTE_TIMEOUT = ")?timeout=30000";
 
-    private static String BROKER = "tcp://192.168.56.101:61816";
+    private static String BROKER_SSL = "ssl://192.168.56.102:61714";
 
     private static String getBrokerURI(String uri) {
         StringBuffer brokerUrl = new StringBuffer(BROKER_SETUP);
@@ -21,7 +21,7 @@ public final class DemoDataUtils {
 
     public static String readBrokerURL() {
         String brokerUrl = null;
-        brokerUrl = DemoDataUtils.getBrokerURI(BROKER);
+        brokerUrl = DemoDataUtils.getBrokerURI(BROKER_SSL);
 
         return brokerUrl;
     }
