@@ -1,9 +1,7 @@
 package it.eng.idsa;
 
-import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Properties;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -17,9 +15,12 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 
+import it.eng.idsa.util.PropertiesConfig;
+
 
 
 public class ConsumerConnection {
+	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
 	private static Logger LOG = Logger.getLogger(ConsumerConnection.class.getName());
 
 	public static void main(String[] args) {
@@ -27,17 +28,13 @@ public class ConsumerConnection {
 		String token = null;
 		try {
 			LOG.debug("ConsumerConnector starting...");
-			FileInputStream input = new FileInputStream("config.properties");
-			// load a properties file
-			Properties prop = new Properties();
-			prop.load(input);
 
-			Path targetDirectory=Paths.get(prop.getProperty("targetDirectory"));
-			String dapsUrl=prop.getProperty("dapsUrl");
-			String keyStoreName=prop.getProperty("keyStoreName");
-			String keyStorePassword=prop.getProperty("keyStorePassword");
-			String keystoreAliasName=prop.getProperty("keystoreAliasName");
-			String connectorUUID=prop.getProperty("connectorUUID");
+			Path targetDirectory=Paths.get(CONFIG_PROPERTIES.getProperty("targetDirectory"));
+			String dapsUrl=CONFIG_PROPERTIES.getProperty("dapsUrl");
+			String keyStoreName=CONFIG_PROPERTIES.getProperty("keyStoreName");
+			String keyStorePassword=CONFIG_PROPERTIES.getProperty("keyStorePassword");
+			String keystoreAliasName=CONFIG_PROPERTIES.getProperty("keystoreAliasName");
+			String connectorUUID=CONFIG_PROPERTIES.getProperty("connectorUUID");
 
 			DAPSInteraction dapsInteraction=new DAPSInteraction();
 			token=dapsInteraction.acquireToken(targetDirectory, dapsUrl, keyStoreName, keyStorePassword, keystoreAliasName, connectorUUID);
@@ -59,7 +56,7 @@ public class ConsumerConnection {
 		 */
 		Client client = ClientBuilder.newClient(config);		
 		
-		WebTarget webTarget = client.target("http://localhost:8080/base-producer/webapi/provider");
+		WebTarget webTarget = client.target(CONFIG_PROPERTIES.getProperty("providerUri"));
 		 
 		Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
 		 

@@ -1,16 +1,18 @@
 package it.eng.idsa.util;
+
+import it.eng.idsa.util.PropertiesConfig;
 /**
  * The constant data utility used in this Demo
  */
 public final class DemoDataUtils {
 
-    public static final String DESTINATION = "test.queue";
+    private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
+
+	public static final String DESTINATION = "test.queue";
 
     private static final String BROKER_SETUP = "failover:(";
 
     private static final String HALF_MINUTE_TIMEOUT = ")?timeout=30000";
-
-    private static String BROKER_SSL = "ssl://192.168.56.102:61714";
 
     private static String getBrokerURI(String uri) {
         StringBuffer brokerUrl = new StringBuffer(BROKER_SETUP);
@@ -21,7 +23,8 @@ public final class DemoDataUtils {
 
     public static String readBrokerURL() {
         String brokerUrl = null;
-        brokerUrl = DemoDataUtils.getBrokerURI(BROKER_SSL);
+        String brokerSSLUrl = DemoDataUtils.getBrokerURI(CONFIG_PROPERTIES.getProperty("brokerSslUrl"));
+        brokerUrl = DemoDataUtils.getBrokerURI(brokerSSLUrl);
 
         return brokerUrl;
     }

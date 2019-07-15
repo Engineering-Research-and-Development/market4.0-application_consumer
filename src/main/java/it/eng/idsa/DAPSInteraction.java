@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import it.eng.idsa.util.PropertiesConfig;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -31,7 +32,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class DAPSInteraction {
-    private static final Logger LOG = Logger.getLogger(DAPSInteraction.class);
+    private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
+	private static final Logger LOG = Logger.getLogger(DAPSInteraction.class);
 
 	public DAPSInteraction() {}
 
@@ -48,6 +50,7 @@ public class DAPSInteraction {
 	public String acquireToken(Path targetDirectory, String dapsUrl, String keyStoreName, String keyStorePassword, String keystoreAliasName, String connectorUUID) {
 		LOG.debug("Resolving path for keystore: " + keyStoreName);
 		LOG.debug("Path to resolve: " + targetDirectory);
+		
 		String token="";
 		try (InputStream jksInputStream = Files.newInputStream(targetDirectory.resolve(keyStoreName))) {
 			KeyStore store = KeyStore.getInstance("JKS");
@@ -77,7 +80,7 @@ public class DAPSInteraction {
 					.setSubject(connectorUUID)
 					.setExpiration(expiryDate)
 					.setIssuedAt(Date.from(Instant.now()))
-					.setAudience("https://api.localhost")
+					.setAudience(CONFIG_PROPERTIES.getProperty("audience"))
 					.setNotBefore(Date.from(Instant.now()));
 
 			String jws = jwtb.signWith( SignatureAlgorithm.RS256, privKey).compact();
@@ -91,7 +94,7 @@ public class DAPSInteraction {
 			 */
 			String json =
 					"{\"\": \"\","
-							+ "\"\":\"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\","
+							+ CONFIG_PROPERTIES.getProperty("oauthParameters")
 							+ "\"\":\""
 							+ jws + "\","
 							+ "\"\":\"\","
@@ -102,10 +105,10 @@ public class DAPSInteraction {
 			LOG.debug("POSTing with JSON header " + json);
 			OkHttpClient client = new OkHttpClient();
 			RequestBody formBody = new FormBody.Builder()
-					.add("grant_type", "client_credentials")
-					.add("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-					.add("client_assertion", jws)
-					.add("scope", "ids_connector security_level")
+					.add(CONFIG_PROPERTIES.getProperty("keyGrantType"), CONFIG_PROPERTIES.getProperty("valueGrantTypeClientCredentials"))
+					.add(CONFIG_PROPERTIES.getProperty("keyClientAssertionType"), CONFIG_PROPERTIES.getProperty("valueClientAssertionType"))
+					.add(CONFIG_PROPERTIES.getProperty("keyClientAssertion"), jws)
+					.add(CONFIG_PROPERTIES.getProperty("keyScope"), CONFIG_PROPERTIES.getProperty("valueScopeIdsConnectorSecurityLevel"))
 					.build();
 			Request request = new Request.Builder().url(dapsUrl).post(formBody).build();
 			Response response = client.newCall(request).execute();
@@ -115,8 +118,8 @@ public class DAPSInteraction {
 			//          
 			//actually, try and *reuse* a single instance of ObjectMapper
 			
-			if (node.has("access_token")) {
-				token=node.get("access_token").asText();
+			if (node.has(CONFIG_PROPERTIES.getProperty("accessToken"))) {
+				token=node.get(CONFIG_PROPERTIES.getProperty("accessToken")).asText();
 				LOG.debug("access_token: " + token);
 			}    
 			LOG.debug("Response: " + response.toString());

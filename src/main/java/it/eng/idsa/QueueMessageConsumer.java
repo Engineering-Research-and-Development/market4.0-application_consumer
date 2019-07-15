@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
  * Message consumer which consumes the message from ActiveMQ Broker
  */
 public class QueueMessageConsumer implements MessageListener {
+	private static final String CONSUMER_MESSAGE_RECEIVED = "QueueMessageConsumer Received message [ %s ]";
+
 	private static Logger LOG = Logger.getLogger(QueueMessageConsumer.class.getName());
 
     private String activeMqBrokerUri;
@@ -46,7 +48,7 @@ public class QueueMessageConsumer implements MessageListener {
     public void onMessage(Message message) {
         String msg;
         try {
-            msg = String.format("QueueMessageConsumer Received message [ %s ]",
+            msg = String.format(CONSUMER_MESSAGE_RECEIVED,
                     ((TextMessage) message).getText());
             //Thread.sleep(1000);// sleep for 10 seconds
             System.out.println(msg);
