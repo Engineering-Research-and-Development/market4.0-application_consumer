@@ -108,7 +108,7 @@ public class DAPSInteraction {
 					.add(CONFIG_PROPERTIES.getProperty("keyGrantType"), CONFIG_PROPERTIES.getProperty("valueGrantTypeClientCredentials"))
 					.add(CONFIG_PROPERTIES.getProperty("keyClientAssertionType"), CONFIG_PROPERTIES.getProperty("valueClientAssertionType"))
 					.add(CONFIG_PROPERTIES.getProperty("keyClientAssertion"), jws)
-					.add(CONFIG_PROPERTIES.getProperty("keyScope"), CONFIG_PROPERTIES.getProperty("valueScopeIdsConnectorSecurityLevel"))
+					//.add(CONFIG_PROPERTIES.getProperty("keyScope"), CONFIG_PROPERTIES.getProperty("valueScopeIdsConnectorSecurityLevel"))
 					.build();
 			Request request = new Request.Builder().url(dapsUrl).post(formBody).build();
 			Response response = client.newCall(request).execute();
