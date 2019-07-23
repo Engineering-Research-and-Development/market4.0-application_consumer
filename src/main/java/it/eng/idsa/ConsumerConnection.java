@@ -38,7 +38,7 @@ public class ConsumerConnection {
 
 			DAPSInteraction dapsInteraction=new DAPSInteraction();
 			token=dapsInteraction.acquireToken(targetDirectory, dapsUrl, keyStoreName, keyStorePassword, keystoreAliasName, connectorUUID);
-			token="test"; 
+
 			LOG.debug("TOKEN="+token);
 		}catch(Exception e) {
 			e.printStackTrace();
