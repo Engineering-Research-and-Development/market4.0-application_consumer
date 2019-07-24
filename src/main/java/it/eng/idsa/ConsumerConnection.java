@@ -18,14 +18,18 @@ import org.glassfish.jersey.client.ClientConfig;
 import it.eng.idsa.util.PropertiesConfig;
 
 
-
 public class ConsumerConnection {
 	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
 	private static Logger LOG = Logger.getLogger(ConsumerConnection.class.getName());
+	private static String token = null;
+	
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String token = null;
+
+
+
+
 		try {
 			LOG.debug("ConsumerConnector starting...");
 
@@ -40,38 +44,42 @@ public class ConsumerConnection {
 			token=dapsInteraction.acquireToken(targetDirectory, dapsUrl, keyStoreName, keyStorePassword, keystoreAliasName, connectorUUID);
 
 			LOG.debug("TOKEN="+token);
+
+			
+			ClientConfig config = new ClientConfig();
+			config.connectorProvider(new ApacheConnectorProvider());
+
+
+			/*
+			 * config.property(ClientProperties.PROXY_URI, "proxy_url");
+			 * config.property(ClientProperties.PROXY_USERNAME,"user_name");
+			 * config.property(ClientProperties.PROXY_PASSWORD,"password");
+			 */
+			Client client = ClientBuilder.newClient(config);		
+
+			WebTarget webTarget = client.target(CONFIG_PROPERTIES.getProperty("providerUri"));
+
+			Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
+
+			Response response = invocationBuilder.post(Entity.json(new it.eng.idsa.ArtifactRequestMessage(token)));
+
+
+			if (response.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
+				LOG.debug("UNAUTHORIZED");
+			}
+			if (response.getStatus()==Response.Status.ACCEPTED.getStatusCode()) {
+				LOG.debug("ACCEPTED");
+				MessageConsumerApp messageConsumerApp=new MessageConsumerApp();
+				messageConsumerApp.activateListening();
+				LOG.debug("***Listening Activated***");
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		ClientConfig config = new ClientConfig();
-		config.connectorProvider(new ApacheConnectorProvider());
 
-
-		/*
-		 * config.property(ClientProperties.PROXY_URI, "proxy_url");
-		 * config.property(ClientProperties.PROXY_USERNAME,"user_name");
-		 * config.property(ClientProperties.PROXY_PASSWORD,"password");
-		 */
-		Client client = ClientBuilder.newClient(config);		
-		
-		WebTarget webTarget = client.target(CONFIG_PROPERTIES.getProperty("providerUri"));
-		 
-		Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
-		 
-		Response response = invocationBuilder.post(Entity.entity(token, MediaType.APPLICATION_JSON));
-	
-		System.out.println("response="+response.readEntity(String.class));
-	
-		if (response.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
-			LOG.debug("UNAUTHORIZED");
-		}
-		if (response.getStatus()==Response.Status.ACCEPTED.getStatusCode()) {
-			LOG.debug("ACCEPTED");
-			MessageConsumerApp messageConsumerApp=new MessageConsumerApp();
-			messageConsumerApp.activateListening();
-			LOG.debug("***Listening Activated***");
-		}
 	}
+	
+	
+	
+
 }

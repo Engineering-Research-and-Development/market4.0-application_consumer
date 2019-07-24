@@ -61,5 +61,10 @@
 			<artifactId>nimbus-jose-jwt</artifactId>
 			<version>7.5.1</version>
 		</dependency>
+		<dependency>
+			<groupId>de.fraunhofer.iais.eis.ids.infomodel</groupId>
+			<artifactId>java</artifactId>
+			<version>1.0.3-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

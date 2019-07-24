@@ -20,13 +20,16 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import it.eng.idsa.util.PropertiesConfig;
+
 public class InstallCert {
+	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
 
     public static void main(final String[] args) {
         InstallCert installCert = new InstallCert();
 
         try {
-            installCert.generateCert("192.168.56.102", 61714);
+            installCert.generateCert(CONFIG_PROPERTIES.getProperty("brokerSslAddress"), Integer.parseInt(CONFIG_PROPERTIES.getProperty("brokerSslPort")));
         } catch (Exception e) {
             e.printStackTrace();
         }
