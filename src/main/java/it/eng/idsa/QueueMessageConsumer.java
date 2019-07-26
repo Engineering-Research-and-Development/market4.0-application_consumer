@@ -53,7 +53,7 @@ public class QueueMessageConsumer implements MessageListener {
         MessageConsumer consumer = session.createConsumer(destination);
         consumer.setMessageListener(this);
 
-        System.out.println(String.format("QueueMessageConsumer Waiting for messages at %s %s",
+       LOG.debug(String.format("QueueMessageConsumer Waiting for messages at %s %s",
                 destinationName, this.activeMqBrokerUri));
     }
 

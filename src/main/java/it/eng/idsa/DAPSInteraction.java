@@ -2,6 +2,8 @@ package it.eng.idsa;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +21,7 @@ import java.security.cert.CertificateException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import org.apache.log4j.Logger;
@@ -38,11 +41,15 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import it.eng.idsa.util.PropertiesConfig;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.Route;
 
 public class DAPSInteraction {
 	private static final Logger LOG = Logger.getLogger(DAPSInteraction.class);
@@ -50,6 +57,7 @@ public class DAPSInteraction {
 	private Key privKey;
 	private Certificate cert;
 	private PublicKey publicKey;
+	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
 
 
 	public DAPSInteraction() {}
@@ -124,14 +132,40 @@ public class DAPSInteraction {
 							+ "}";
 
 
-
 			LOG.debug("POSTing with JSON header " + json);
-			OkHttpClient client = new OkHttpClient();
+			Authenticator proxyAuthenticator = new Authenticator() {
+				@Override public Request authenticate(Route route, Response response) throws IOException {
+					String credential = Credentials.basic(CONFIG_PROPERTIES.getProperty("proxyUser"), CONFIG_PROPERTIES.getProperty("proxyPassword"));
+					return response.request().newBuilder()
+							.header("Proxy-Authorization", credential)
+							.build();
+				}
+			};
+
+			
+			OkHttpClient client = null;
+			if (!CONFIG_PROPERTIES.getProperty("proxyUser").equalsIgnoreCase("")) {
+			client=new OkHttpClient.Builder()
+					.connectTimeout(60, TimeUnit.SECONDS)
+					.writeTimeout(60, TimeUnit.SECONDS)
+					.readTimeout(60, TimeUnit.SECONDS)
+					.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(CONFIG_PROPERTIES.getProperty("proxyHost"), Integer.parseInt(CONFIG_PROPERTIES.getProperty("proxyPort")))))
+					.proxyAuthenticator(proxyAuthenticator)
+					.build();
+			}
+			else {
+				client=new OkHttpClient.Builder()
+						.connectTimeout(60, TimeUnit.SECONDS)
+						.writeTimeout(60, TimeUnit.SECONDS)
+						.readTimeout(60, TimeUnit.SECONDS)
+						.build();
+			}
 			RequestBody formBody = new FormBody.Builder()
 					.add("grant_type", "client_credentials")
 					.add("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
 					.add("client_assertion", jws)
 					//.add("scope", "ids_connector security_level")
+
 					.build();
 			Request request = new Request.Builder().url(dapsUrl).post(formBody).build();
 			Response response = client.newCall(request).execute();
@@ -218,12 +252,12 @@ public class DAPSInteraction {
 			// object caches the retrieved keys to speed up subsequent look-ups and can
 			// also gracefully handle key-rollover
 			JWKSource<SecurityContext> keySource = new RemoteJWKSet<SecurityContext>(new URL("https://daps.aisec.fraunhofer.de/.well-known/jwks.json"));
-		
-			
+
+
 			// Load JWK set from URL
 			JWKSet publicKeys = JWKSet.load(new URL(dapsJWKSUrl));
 			RSAKey key = (RSAKey) publicKeys.getKeyByKeyId("default");
-	
+
 			// The expected JWS algorithm of the access tokens (agreed out-of-band)
 			JWSAlgorithm expectedJWSAlg = JWSAlgorithm.RS256;
 
@@ -298,6 +332,6 @@ public class DAPSInteraction {
 		}
 		return false;
 	}
-	
+
 
 }
