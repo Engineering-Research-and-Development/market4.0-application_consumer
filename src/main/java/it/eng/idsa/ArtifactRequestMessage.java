@@ -1,7 +1,9 @@
 package it.eng.idsa;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -15,13 +17,14 @@ import de.fraunhofer.iais.eis.Token;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeName("ids:ArtifactRequestMessage")
 public class ArtifactRequestMessage implements de.fraunhofer.iais.eis.ArtifactRequestMessage{
-	String tokenValue;
 
+	private static final it.eng.idsa.util.PropertiesConfig CONFIG_PROPERTIES = it.eng.idsa.util.PropertiesConfig.getInstance();
+	String tokenValue;
 	public ArtifactRequestMessage(String token) {
 		// TODO Auto-generated constructor stub
 		tokenValue=token;
 	}
-	
+
 	@Override
 	public URI getTransferContract() {
 		// TODO Auto-generated method stub
@@ -84,6 +87,13 @@ public class ArtifactRequestMessage implements de.fraunhofer.iais.eis.ArtifactRe
 	@Override
 	public @NotNull URI getId() {
 		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub
+		try {
+			return new URI (CONFIG_PROPERTIES.getProperty("uriSchema")+CONFIG_PROPERTIES.getProperty("uriAuthority")+CONFIG_PROPERTIES.getProperty("uriPath")+UUID.randomUUID().toString());
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 
