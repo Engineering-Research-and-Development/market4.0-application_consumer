@@ -23,7 +23,7 @@ public final class DemoDataUtils {
 
     public static String readBrokerURL() {
         String brokerUrl = null;
-        String brokerSSLUrl = DemoDataUtils.getBrokerURI(CONFIG_PROPERTIES.getProperty("brokerSslUrl"));
+        String brokerSSLUrl = DemoDataUtils.getBrokerURI(CONFIG_PROPERTIES.getProperty("activeMQUrl"));
         brokerUrl = DemoDataUtils.getBrokerURI(brokerSSLUrl);
 
         return brokerUrl;
