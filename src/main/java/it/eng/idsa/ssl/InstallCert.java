@@ -22,6 +22,12 @@ import javax.net.ssl.X509TrustManager;
 
 import it.eng.idsa.util.PropertiesConfig;
 
+
+/**
+ * The InstallCert is an helpful class for installing SSL certificates into the keystore
+ * 
+ * @author  Gabriele De Luca, Milan Karajovic
+ */
 public class InstallCert {
 	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
 

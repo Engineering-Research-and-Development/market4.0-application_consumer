@@ -24,7 +24,9 @@ import org.glassfish.jersey.client.ClientConfig;
 import it.eng.idsa.util.PropertiesConfig;
 
 /**
- * Message consumer which consumes the message from ActiveMQ Broker
+ * The QueueMessageConsumer consumes messages to ActiveMQ Broker
+ * 
+ * @author  Gabriele De Luca, Milan Karajovic
  */
 public class QueueMessageConsumer implements MessageListener {
 	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();

@@ -4,6 +4,12 @@ import javax.jms.JMSException;
 
 import it.eng.idsa.QueueMessageConsumer;
 
+
+/**
+* The ActiveMQBrokerConsumerTest class consumes an ActiveMQ queue for testing
+*
+* @author  Gabriele De Luca, Milan Karajovic
+*/
 public class ActiveMQBrokerConsumerTest {
 
 	public static void main(String[] args) {

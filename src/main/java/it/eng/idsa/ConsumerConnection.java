@@ -38,6 +38,11 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import org.apache.http.util.EntityUtils;
 
+/**
+ * The ConsumerConnection manages the flow on the consumer side, interact with DAPS for getting a token, with the producer for requesting data and enables the listener queue for getting data
+ * 
+ * @author  Gabriele De Luca, Milan Karajovic
+ */
 public class ConsumerConnection {
 	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
 	private static Logger LOG = Logger.getLogger(ConsumerConnection.class.getName());
@@ -46,13 +51,9 @@ public class ConsumerConnection {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
-
-
-
 		try {
 			LOG.debug("ConsumerConnector starting...");
-
+			
 			Path targetDirectory=Paths.get(CONFIG_PROPERTIES.getProperty("targetDirectory"));
 			String dapsUrl=CONFIG_PROPERTIES.getProperty("dapsUrl");
 			String keyStoreName=CONFIG_PROPERTIES.getProperty("keyStoreName");
@@ -60,10 +61,11 @@ public class ConsumerConnection {
 			String keystoreAliasName=CONFIG_PROPERTIES.getProperty("keystoreAliasName");
 			String connectorUUID=CONFIG_PROPERTIES.getProperty("connectorUUID");
 
+			LOG.debug("...token acquisition...");
 			DAPSInteraction dapsInteraction=new DAPSInteraction();
 			token=dapsInteraction.acquireToken(targetDirectory, dapsUrl, keyStoreName, keyStorePassword, keystoreAliasName, connectorUUID);
 
-			LOG.debug("TOKEN="+token);
+			LOG.debug("...token="+token);
 
 
 			ClientConfig config = new ClientConfig();
@@ -83,33 +85,31 @@ public class ConsumerConnection {
 			Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
 
 
-
+			LOG.debug("...ArtifactRequestMessage creation...");
 			URI uri=new URI (CONFIG_PROPERTIES.getProperty("uriSchema")+CONFIG_PROPERTIES.getProperty("uriAuthority")+CONFIG_PROPERTIES.getProperty("uriArtifact")+CONFIG_PROPERTIES.getProperty("artifactId"));
 			HttpEntity entity = createArtifactRequest(uri);
 			if (entity != null) {
 				String retSrc = EntityUtils.toString(entity); 
-				System.out.println("retSrc="+retSrc);
+				LOG.debug("...ArtifactRequestMessage="+retSrc);
 			}
-
-
-
 
 
 			/**OLD
 			Response response = invocationBuilder.post(Entity.json(new it.eng.idsa.ArtifactRequestMessage(token)));
 			 **/
+			LOG.debug("...sending REST request to the producer...");
 			Response response = invocationBuilder.post(Entity.entity(EntityUtils.toString(entity), "multipart/mixed"));
 			//HttpResponse resp = sendArtifactRequest(entity,CONFIG_PROPERTIES.getProperty("providerUri"));
 
-			
+
 			if (response.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
-				LOG.debug("UNAUTHORIZED");
+				LOG.debug("...response status = UNAUTHORIZED");
 			}
 			if (response.getStatus()==Response.Status.ACCEPTED.getStatusCode()) {
-				LOG.debug("ACCEPTED");
+				LOG.debug("...response status = ACCEPTED");
 				MessageConsumerApp messageConsumerApp=new MessageConsumerApp();
 				messageConsumerApp.activateListening();
-				LOG.debug("***Listening Activated***");
+				LOG.debug("...queue activated successfully");
 			}
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -117,6 +117,12 @@ public class ConsumerConnection {
 
 	}
 
+	
+	
+	/**
+	 * The createArtifactRequest is responsible for creating the ArtifactRequestMessage
+	 * 
+	 */
 	private static HttpEntity createArtifactRequest(URI requestedArtifact) throws IOException, DatatypeConfigurationException, ConstraintViolationException, URISyntaxException {
 		GregorianCalendar gcal = new GregorianCalendar();
 		XMLGregorianCalendar xgcal = DatatypeFactory.newInstance()
@@ -136,7 +142,7 @@ public class ConsumerConnection {
 				.addTextBody("header", msgSerialized, org.apache.http.entity.ContentType.APPLICATION_JSON)
 				.build();
 	}
-/*
+	/*
 	private static HttpResponse sendArtifactRequest(HttpEntity multipartRequestBody, String providerUrl) {
 		try {
 			CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -152,7 +158,7 @@ public class ConsumerConnection {
 		}
 		return null;
 	}
-*/
+	 */
 
 
 }

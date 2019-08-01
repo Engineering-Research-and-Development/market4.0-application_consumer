@@ -51,6 +51,13 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.Route;
 
+
+/**
+* The DAPSInteraction class is responsible for token acquisition and validation
+* fully compatible with Fraunhofer AISEC DAPS Server.
+*
+* @author  Gabriele De Luca, Milan Karajovic
+*/
 public class DAPSInteraction {
 	private static final Logger LOG = Logger.getLogger(DAPSInteraction.class);
 	private static DAPSInteraction instance;
@@ -241,6 +248,13 @@ public class DAPSInteraction {
 		return rc.toString();
 	}
 
+	
+	/**
+	 * Method to validate a Dynamic Attribute Token (DAT) from a Dynamic Attribute Provisioning Service (DAPS)
+	 *
+	 * @param tokenValue - The directory the keystore resides in
+	 * @param dapsJWKSUrl - the token acquisition URL (e.g., http://daps.aisec.fraunhofer.de:8080, the suffix (/token.php) is added automatically
+	*/
 	public boolean validateAuthorization(String tokenValue, String dapsJWKSUrl) {
 		try {
 			// Set up a JWT processor to parse the tokens and then check their signature

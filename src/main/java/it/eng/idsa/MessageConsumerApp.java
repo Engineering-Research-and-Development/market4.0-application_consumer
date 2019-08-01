@@ -8,6 +8,11 @@ import it.eng.idsa.util.DemoDataUtils;
 
 
 
+/**
+* The MessageConsumerApp class is responsible to activate/deactivate ActiveMQ queue listeners
+*
+* @author  Gabriele De Luca, Milan Karajovic
+*/
 public class MessageConsumerApp {
 	private static Logger LOG = Logger.getLogger(MessageConsumerApp.class.getName());
 
