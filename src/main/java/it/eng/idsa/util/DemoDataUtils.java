@@ -25,9 +25,10 @@ public final class DemoDataUtils {
     }
 
     public static String readBrokerURL() {
-        String brokerUrl = null;
-        String brokerSSLUrl = DemoDataUtils.getBrokerURI(CONFIG_PROPERTIES.getProperty("activeMQUrl"));
-        brokerUrl = DemoDataUtils.getBrokerURI(brokerSSLUrl);
+        String brokerUrl = null;        
+        
+        String brokerOpenwirelUrl = DemoDataUtils.getBrokerURI(CONFIG_PROPERTIES.getProperty("brokerOpenwirelUrl"));
+        brokerUrl = DemoDataUtils.getBrokerURI(brokerOpenwirelUrl);
 
         return brokerUrl;
     }
