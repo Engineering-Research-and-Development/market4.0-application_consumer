@@ -8,21 +8,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.log4j.Logger;
-import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
-import org.glassfish.jersey.client.ClientConfig;
 
+import it.eng.idsa.model.message.MessagesIDS;
 import it.eng.idsa.util.PropertiesConfig;
-
 /**
  * The QueueMessageConsumer consumes messages to ActiveMQ Broker
  * 
@@ -73,16 +64,7 @@ public class QueueMessageConsumer implements MessageListener {
     }
     
     public void senReceivedMessage(String msg) {
-    	ClientConfig config = new ClientConfig();
-		config.connectorProvider(new ApacheConnectorProvider());
-		Client client = ClientBuilder.newClient(config);
-		WebTarget webTarget = client.target(CONFIG_PROPERTIES.getProperty("webUri"));
-		 
-		Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
-		 
-		Response response = invocationBuilder.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
-	
-		System.out.println("response="+response.readEntity(String.class));
+    	MessagesIDS.getInstance().putMessage(msg);
     }
 
     public String getDestinationName() {

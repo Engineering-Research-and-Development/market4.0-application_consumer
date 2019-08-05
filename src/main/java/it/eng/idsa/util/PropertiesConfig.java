@@ -17,7 +17,7 @@ public class PropertiesConfig {
 
 	private PropertiesConfig() {
 		try {
-			InputStream in = new FileInputStream("config.properties");
+			InputStream in = getClass().getClassLoader().getResourceAsStream("config.properties");
 			configProp.load(in);
 		} catch (IOException e) {
 			e.printStackTrace();

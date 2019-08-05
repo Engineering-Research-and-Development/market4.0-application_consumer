@@ -24,6 +24,7 @@ import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import it.eng.idsa.model.message.MessagesIDS;
 import it.eng.idsa.util.PropertiesConfig;
 import de.fraunhofer.iais.eis.ArtifactRequestMessageBuilder;
 import de.fraunhofer.iais.eis.Message;
@@ -44,77 +45,92 @@ import org.apache.http.util.EntityUtils;
  * @author  Gabriele De Luca, Milan Karajovic
  */
 public class ConsumerConnection {
-	private static final PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
-	private static Logger LOG = Logger.getLogger(ConsumerConnection.class.getName());
-	private static String token = null;
+	private static ConsumerConnection consumerConnection = null;
+	private PropertiesConfig CONFIG_PROPERTIES = PropertiesConfig.getInstance();
+	private Logger LOG = Logger.getLogger(ConsumerConnection.class.getName());
+	private String token = null;
+	private boolean consumerStarted;
 
+	private ConsumerConnection() {
+		this.consumerStarted = false;
+	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		try {
-			LOG.debug("ConsumerConnector starting...");
-			
-			Path targetDirectory=Paths.get(CONFIG_PROPERTIES.getProperty("targetDirectory"));
-			String dapsUrl=CONFIG_PROPERTIES.getProperty("dapsUrl");
-			String keyStoreName=CONFIG_PROPERTIES.getProperty("keyStoreName");
-			String keyStorePassword=CONFIG_PROPERTIES.getProperty("keyStorePassword");
-			String keystoreAliasName=CONFIG_PROPERTIES.getProperty("keystoreAliasName");
-			String connectorUUID=CONFIG_PROPERTIES.getProperty("connectorUUID");
-
-			LOG.debug("...token acquisition...");
-			DAPSInteraction dapsInteraction=new DAPSInteraction();
-			token=dapsInteraction.acquireToken(targetDirectory, dapsUrl, keyStoreName, keyStorePassword, keystoreAliasName, connectorUUID);
-
-			LOG.debug("...token="+token);
-
-
-			ClientConfig config = new ClientConfig();
-			config.connectorProvider(new ApacheConnectorProvider());
-
-
-			/*
-			 * config.property(ClientProperties.PROXY_URI, "proxy_url");
-			 * config.property(ClientProperties.PROXY_USERNAME,"user_name");
-			 * config.property(ClientProperties.PROXY_PASSWORD,"password");
-			 */
-			Client client = ClientBuilder.newClient(config);		
-			client.register(MultiPartFeature.class);
-
-			WebTarget webTarget = client.target(CONFIG_PROPERTIES.getProperty("providerUri"));
-
-			Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
-
-
-			LOG.debug("...ArtifactRequestMessage creation...");
-			URI uri=new URI (CONFIG_PROPERTIES.getProperty("uriSchema")+CONFIG_PROPERTIES.getProperty("uriAuthority")+CONFIG_PROPERTIES.getProperty("uriArtifact")+CONFIG_PROPERTIES.getProperty("artifactId"));
-			HttpEntity entity = createArtifactRequest(uri);
-			if (entity != null) {
-				String retSrc = EntityUtils.toString(entity); 
-				LOG.debug("...ArtifactRequestMessage="+retSrc);
-			}
-
-
-			/**OLD
-			Response response = invocationBuilder.post(Entity.json(new it.eng.idsa.ArtifactRequestMessage(token)));
-			 **/
-			LOG.debug("...sending REST request to the producer...");
-			Response response = invocationBuilder.post(Entity.entity(EntityUtils.toString(entity), "multipart/mixed"));
-			//HttpResponse resp = sendArtifactRequest(entity,CONFIG_PROPERTIES.getProperty("providerUri"));
-
-
-			if (response.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
-				LOG.debug("...response status = UNAUTHORIZED");
-			}
-			if (response.getStatus()==Response.Status.ACCEPTED.getStatusCode()) {
-				LOG.debug("...response status = ACCEPTED");
-				MessageConsumerApp messageConsumerApp=new MessageConsumerApp();
-				messageConsumerApp.activateListening();
-				LOG.debug("...queue activated successfully");
-			}
-		}catch(Exception e) {
-			e.printStackTrace();
+	public static ConsumerConnection getInstance() {
+		if(consumerConnection==null) {
+			consumerConnection = new ConsumerConnection();
 		}
-
+		return consumerConnection;
+	}
+	
+	public boolean startConsumer() {
+		if(consumerStarted==false) {
+			// TODO Auto-generated method stub
+			try {
+				LOG.debug("ConsumerConnector starting...");
+				
+				Path targetDirectory=Paths.get(CONFIG_PROPERTIES.getProperty("targetDirectory"));
+				String dapsUrl=CONFIG_PROPERTIES.getProperty("dapsUrl");
+				String keyStoreName=CONFIG_PROPERTIES.getProperty("keyStoreName");
+				String keyStorePassword=CONFIG_PROPERTIES.getProperty("keyStorePassword");
+				String keystoreAliasName=CONFIG_PROPERTIES.getProperty("keystoreAliasName");
+				String connectorUUID=CONFIG_PROPERTIES.getProperty("connectorUUID");
+	
+				LOG.debug("...token acquisition...");
+				DAPSInteraction dapsInteraction=new DAPSInteraction();
+				token=dapsInteraction.acquireToken(targetDirectory, dapsUrl, keyStoreName, keyStorePassword, keystoreAliasName, connectorUUID);
+	
+				LOG.debug("...token="+token);
+	
+	
+				ClientConfig config = new ClientConfig();
+				config.connectorProvider(new ApacheConnectorProvider());
+	
+	
+				/*
+				 * config.property(ClientProperties.PROXY_URI, "proxy_url");
+				 * config.property(ClientProperties.PROXY_USERNAME,"user_name");
+				 * config.property(ClientProperties.PROXY_PASSWORD,"password");
+				 */
+				Client client = ClientBuilder.newClient(config);		
+				client.register(MultiPartFeature.class);
+	
+				WebTarget webTarget = client.target(CONFIG_PROPERTIES.getProperty("providerUri"));
+	
+				Invocation.Builder invocationBuilder =  webTarget.request(MediaType.APPLICATION_JSON);
+	
+	
+				LOG.debug("...ArtifactRequestMessage creation...");
+				URI uri=new URI (CONFIG_PROPERTIES.getProperty("uriSchema")+CONFIG_PROPERTIES.getProperty("uriAuthority")+CONFIG_PROPERTIES.getProperty("uriArtifact")+CONFIG_PROPERTIES.getProperty("artifactId"));
+				HttpEntity entity = createArtifactRequest(uri);
+				if (entity != null) {
+					String retSrc = EntityUtils.toString(entity); 
+					LOG.debug("...ArtifactRequestMessage="+retSrc);
+				}
+	
+	
+				/**OLD
+				Response response = invocationBuilder.post(Entity.json(new it.eng.idsa.ArtifactRequestMessage(token)));
+				 **/
+				LOG.debug("...sending REST request to the producer...");
+				Response response = invocationBuilder.post(Entity.entity(EntityUtils.toString(entity), "multipart/mixed"));
+				//HttpResponse resp = sendArtifactRequest(entity,CONFIG_PROPERTIES.getProperty("providerUri"));
+	
+	
+				if (response.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
+					LOG.debug("...response status = UNAUTHORIZED");
+				}
+				if (response.getStatus()==Response.Status.ACCEPTED.getStatusCode()) {
+					LOG.debug("...response status = ACCEPTED");
+					MessageConsumerApp messageConsumerApp=new MessageConsumerApp();
+					messageConsumerApp.activateListening();
+					LOG.debug("...queue activated successfully");
+				}
+				this.consumerStarted = true;
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return consumerStarted;
 	}
 
 	
@@ -123,7 +139,7 @@ public class ConsumerConnection {
 	 * The createArtifactRequest is responsible for creating the ArtifactRequestMessage
 	 * 
 	 */
-	private static HttpEntity createArtifactRequest(URI requestedArtifact) throws IOException, DatatypeConfigurationException, ConstraintViolationException, URISyntaxException {
+	private HttpEntity createArtifactRequest(URI requestedArtifact) throws IOException, DatatypeConfigurationException, ConstraintViolationException, URISyntaxException {
 		GregorianCalendar gcal = new GregorianCalendar();
 		XMLGregorianCalendar xgcal = DatatypeFactory.newInstance()
 				.newXMLGregorianCalendar(gcal);
@@ -134,7 +150,7 @@ public class ConsumerConnection {
 				._modelVersion_("1.0.3")
 				._authorizationToken_(new TokenBuilder(null)
 						._tokenFormat_(TokenFormat.JWT)
-						._tokenValue_(token).build())
+						._tokenValue_(this.token).build())
 				.build();
 		String msgSerialized = new Serializer().serializePlainJson(msg);
 		return MultipartEntityBuilder
