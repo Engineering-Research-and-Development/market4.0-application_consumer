@@ -122,7 +122,11 @@ public class ConsumerConnection {
 				if (response.getStatus()==Response.Status.ACCEPTED.getStatusCode()) {
 					LOG.debug("...response status = ACCEPTED");
 					MessageConsumerApp messageConsumerApp=new MessageConsumerApp();
-					messageConsumerApp.activateListening();
+					/**
+					 * Listener on the queue in the ActiveMQ to read messages which are received.
+					 * (this part of the code is commented because we are using Camel in the ActiveMQ for routing)
+					 */
+//					messageConsumerApp.activateListening();
 					LOG.debug("...queue activated successfully");
 				}
 				this.consumerStarted = true;

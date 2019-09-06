@@ -1,6 +1,7 @@
 package it.eng.idsa.service;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -26,7 +27,7 @@ public class ConsumerServices {
 		return Response.ok().
 				entity(messagesJSON).
 				header("Access-Control-Allow-Origin", "*").
-				build(); 
+				build();
 	}
 	
 	@GET
@@ -43,4 +44,19 @@ public class ConsumerServices {
 				build(); 
 	}
 	
+	@POST
+	@Path("/receivedMessage")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response receivedMessage(String message) {
+		MessagesIDS.getInstance().putMessage(message);
+		
+		JSONObject json=new JSONObject();
+	    json.put("receivedMessage", message);
+	    
+		return Response.ok().
+				entity(json.toString()).
+				header("Access-Control-Allow-Origin", "*").
+				build();
+		
+	}
 }
