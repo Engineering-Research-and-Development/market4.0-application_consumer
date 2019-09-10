@@ -6,6 +6,16 @@ The Consumer Application is part of the Marker 4.0 Consumer Connector. Main feat
 * IDS Clearing House interaction (WIP) 
 * IDS Broker interaction (TODO)
 
+# How to install cer #
+1. For the URL: https://daps.aisec.fraunhofer.de/token
+     Extract the certification information from HTTPS site (i.e., using Chrome) --> aices.cer
+2. Save .cer in the folder on the Windows (exampe: PATH WHERE IS LOCATED CERTIFICATION)
+3. Import above .cer in the Java JDK:
+     1. open PowerShell
+     2. go to the JDK path, in the folder jre\bin (example: C:\Program Files\Java\jdk1.8.0_162\jre\bin), and execute the next command: 
+.\keytool.exe -import -noprompt -trustcacerts -alias aisecDaps -file 'PATH WHERE IS LOCATED CERTIFICATION\aisec.cer' -keystore ..\lib\security\cacerts
+4. Default password to add certificate is: changeit
+
 # How to install and run #
 1. Get app from the GitHub:
 	https://github.com/Engineering-Research-and-Development/market4.0-application_consumer
